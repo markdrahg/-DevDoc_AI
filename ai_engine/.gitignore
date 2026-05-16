@@ -1,0 +1,49 @@
+# Virtual Environment
+venv/
+.venv/
+
+# Python Cache
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+
+# Environment Variables
+.env
+
+# Workspace / Uploads
+workspace/
+uploads/
+
+# Logs
+*.log
+
+# VS Code
+.vscode/
+
+# OS Files
+.DS_Store
+Thumbs.db
+
+# Build Files
+dist/
+build/
+
+# Jupyter
+.ipynb_checkpoints/
+
+# SQLite
+*.db
+*.sqlite3
+
+# Temporary Files
+temp/
+tmp/
+
+# AI Generated Data
+vector_store/
+embeddings_cache/
+
+# ZIP Test Files
+sample_project.zip
+

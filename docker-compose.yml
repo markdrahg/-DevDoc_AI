@@ -1,0 +1,20 @@
+version: "3.9"
+
+services:
+  ai-engine:
+    build: .
+    container_name: ai_engine_app
+
+    volumes:
+      - .:/app
+      - ./data:/app/data
+
+    working_dir: /app
+
+    command: python main.py
+
+    env_file:
+      - .env
+
+    stdin_open: true
+    tty: true

@@ -1,228 +1,110 @@
+
+import sys
 import os
-import shutil
+
+sys.path.append(os.path.abspath(os.path.dirname(__file__)))
+
 from ingestion.github_ingestion import GitHubIngestion
 from ingestion.zip_handler import ZipHandler
 from ingestion.file_parser import FileParser
 
+from processing.chunkers import Chunker
+from processing.embeddings import EmbeddingGenerator
 
-class RepositoryManager:
 
-    def __init__(self):
+# -------------------------------
+# CONFIG
+# -------------------------------
+REPO_URL = "https://github.com/fastapi/fastapi"
+ZIP_PATH = "sample_project.zip"
 
-        self.parser = FileParser()
+SUPPORTED_EXTENSIONS = (".py", ".js", ".ts", ".md", ".txt", ".json")
 
-    def process_github_repository(self, repo_url):
 
-        github = GitHubIngestion(repo_url)
+# -------------------------------
+# STEP 1: INGESTION
+# -------------------------------
+def run_ingestion():
+    print("\n--- INGESTION START ---\n")
 
-        repo_path = github.clone_repository()
+    parser = FileParser()
+    processed_files = {}
 
-        parsed_files = self.collect_repository_content(repo_path)
+    # 🔹 GitHub repo
+    repo_ingestion = GitHubIngestion(REPO_URL)
+    repo_path = repo_ingestion.clone_repository()
 
-        return {
-            "source": "github",
-            "repository_path": repo_path,
-            "total_files": len(parsed_files),
-            "files": parsed_files
-        }
+    # 🔹 ZIP (optional)
+    zip_path = None
+    if os.path.exists(ZIP_PATH):
+        zip_handler = ZipHandler(ZIP_PATH)
+        zip_path = zip_handler.extract_zip()
 
-    def process_zip_repository(self, zip_path):
+    # 🔹 collect all paths
+    paths_to_scan = [repo_path]
+    if zip_path:
+        paths_to_scan.append(zip_path)
 
-        zip_handler = ZipHandler(zip_path)
-        extract_path = zip_handler.extract_zip()
+    # 🔹 scan files
+    for base_path in paths_to_scan:
+        for root, dirs, files in os.walk(base_path):
 
-        supported_files = zip_handler.get_supported_files()
-
-        parsed_files = []
-
-        for file in supported_files:
-
-            content = self.parser.parse_file(file)
-
-            parsed_files.append({
-                "file_path": file,
-                "content": content
-            })
-
-        return {
-            "source": "zip",
-            "extract_path": extract_path,
-            "total_files": len(parsed_files),
-            "files": parsed_files
-        }
-
-    def collect_repository_content(self, repository_path):
-
-        parsed_files = []
-
-        for root, dirs, files in os.walk(repository_path):
-
-            dirs[:] = [
-                directory
-                for directory in dirs
-                if directory not in [
-                    ".git",
-                    "node_modules",
-                    "venv",
-                    "__pycache__"
-                ]
-            ]
+            # ignore heavy folders
+            dirs[:] = [d for d in dirs if d not in ("node_modules", ".git", "__pycache__")]
 
             for file in files:
+                if not file.endswith(SUPPORTED_EXTENSIONS):
+                    continue
 
-                if file.endswith((
-                    ".py",
-                    ".js",
-                    ".ts",
-                    ".java",
-                    ".cpp",
-                    ".c",
-                    ".md",
-                    ".txt",
-                    ".json"
-                )):
+                file_path = os.path.join(root, file)
 
-                    full_path = os.path.join(root, file)
+                content = parser.parse_file(file_path)
 
-                    content = self.parser.parse_file(full_path)
+                # skip invalid files
+                if content is None or content.strip() == "":
+                    continue
 
-                    parsed_files.append({
-                        "file_path": full_path,
-                        "content": content
-                    })
+                processed_files[file_path] = {
+                    "content": content
+                }
 
-        return parsed_files
-    
-    
-
-class MetadataExtractor:
-
-    def __init__(self):
-        pass
-
-    def extract_repository_metadata(self, repository_path):
-
-        total_files = 0
-        total_directories = 0
-        programming_languages = {}
-
-        for root, dirs, files in os.walk(repository_path):
-
-            total_directories += len(dirs)
-
-            for file in files:
-
-                total_files += 1
-
-                extension = os.path.splitext(file)[1]
-
-                if extension:
-
-                    programming_languages[extension] = (
-                        programming_languages.get(extension, 0) + 1
-                    )
-
-        return {
-            "repository_path": repository_path,
-            "total_files": total_files,
-            "total_directories": total_directories,
-            "languages": programming_languages
-        }
-        
-        
-SUPPORTED_EXTENSIONS = (
-    ".py",
-    ".js",
-    ".ts",
-    ".jsx",
-    ".tsx",
-    ".java",
-    ".cpp",
-    ".c",
-    ".cs",
-    ".go",
-    ".rs",
-    ".php",
-    ".rb",
-    ".swift",
-    ".kt",
-    ".scala",
-    ".md",
-    ".txt",
-    ".json",
-    ".yaml",
-    ".yml",
-    ".xml",
-    ".html",
-    ".css",
-    ".pdf"
-)
-
-IGNORED_DIRECTORIES = [
-    ".git",
-    "node_modules",
-    "venv",
-    "dist",
-    "build",
-    "__pycache__",
-    ".next",
-    ".idea",
-    ".vscode"
-]
-
-class WorkspaceManager:
-
-    def __init__(self):
-
-        self.workspace_path = "workspace"
-        self.uploads_path = "uploads"
-
-    def create_directories(self):
-
-        os.makedirs(self.workspace_path, exist_ok=True)
-        os.makedirs(self.uploads_path, exist_ok=True)
-
-    def clean_directory(self, directory_path):
-
-        if os.path.exists(directory_path):
-
-            shutil.rmtree(directory_path)
-
-            os.makedirs(directory_path, exist_ok=True)
-            
-            
-            
-            
-# ---------- GITHUB TEST ----------
-
-repo_url = "https://github.com/fastapi/fastapi"
-
-repo_ingestion = GitHubIngestion(repo_url)
-
-repo_path = repo_ingestion.clone_repository()
-
-print(f"Repository stored at: {repo_path}")
+    print(f"\n Processed {len(processed_files)} files\n")
+    return processed_files
 
 
-# ---------- ZIP TEST ----------
+# -------------------------------
+# STEP 2: PROCESSING
+# -------------------------------
+def run_processing(files_dict):
+    print("\n--- PROCESSING START ---\n")
 
-zip_handler = ZipHandler("sample_project.zip")
+    chunker = Chunker()
+    chunks = chunker.chunk_files(files_dict)
 
-zip_handler.extract_zip()
+    print(f" Total chunks created: {len(chunks)}")
 
-files = zip_handler.get_supported_files()
+    # show sample
+    print("\nSample chunk:")
+    print(chunks[0])
 
-print(f"Found {len(files)} supported files")
+    # embeddings
+    embedder = EmbeddingGenerator()
+    chunks = embedder.generate_embeddings(chunks)
+
+    print(f"\n Embedding size: {len(chunks[0]['embedding'])}")
+
+    return chunks
 
 
-# ---------- FILE PARSING TEST ----------
+# -------------------------------
+# MAIN
+# -------------------------------
+if __name__ == "__main__":
 
-parser = FileParser()
+    # ingestion
+    files = run_ingestion()
 
-for file in files[:5]:
+    # processing
+    chunks = run_processing(files)
 
-    print(f"\nProcessing: {file}")
-
-    content = parser.parse_file(file)
-
-    print(content[:300])
+    print("\n Pipeline working successfully!")

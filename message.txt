@@ -1,0 +1,90 @@
+```
+repo-intelligence/
+├── frontend/                    # React + Tailwind UI
+│   ├── public/
+│   │   └── index.html
+│   ├── src/
+│   │   ├── components/
+│   │   │   ├── RepositoryInput.jsx      # GitHub URL / ZIP / PDF upload
+│   │   │   ├── QuestionInterface.jsx    # Q&A interface
+│   │   │   ├── DocumentationViewer.jsx  # Generated docs viewer
+│   │   │   ├── HealthDashboard.jsx      # Health score metrics
+│   │   │   └── SourceCitations.jsx      # Citation display
+│   │   ├── services/
+│   │   │   └── api.js                   # Backend API client
+│   │   ├── hooks/
+│   │   │   ├── useRepository.js         # Repository state management
+│   │   │   └── useQuery.js              # Query state management
+│   │   ├── App.jsx
+│   │   └── index.js
+│   ├── package.json
+│   ├── tailwind.config.js
+│   └── vite.config.js
+│
+├── backend/                     # FastAPI REST API
+│   ├── app/
+│   │   ├── main.py                      # FastAPI app entry point
+│   │   ├── config.py                    # Configuration
+│   │   ├── models.py                    # Pydantic models
+│   │   ├── database.py                  # Database connection
+│   │   ├── routers/
+│   │   │   ├── ingestion.py             # Ingestion endpoints
+│   │   │   ├── query.py                 # Query endpoints
+│   │   │   ├── documentation.py         # Documentation endpoints
+│   │   │   └── health.py                # Health check endpoints
+│   │   ├── services/
+│   │   │   ├── file_handler.py          # File upload handling
+│   │   │   └── ai_client.py             # AI engine communication
+│   │   └── middleware/
+│   │       ├── cors.py                  # CORS configuration
+│   │       └── error_handler.py         # Error handling
+│   ├── requirements.txt
+│   └── .env.example
+│
+├── ai_engine/                   # AI Processing Engine
+│   ├── ingestion/
+│   │   ├── __init__.py
+│   │   ├── github_ingestion.py          # GitHub repo cloning & parsing
+│   │   ├── zip_handler.py               # ZIP extraction & processing
+│   │   ├── pdf_processor.py             # PDF text extraction
+│   │   └── file_parser.py               # Multi-format file parsing
+│   ├── processing/
+│   │   ├── __init__.py
+│   │   ├── chunker.py                   # Semantic code chunking
+│   │   ├── embeddings.py                # IBM Granite embeddings
+│   │   ├── code_analyzer.py             # AST parsing & analysis
+│   │   └── metadata_extractor.py        # Extract repo metadata
+│   ├── retrieval/
+│   │   ├── __init__.py
+│   │   ├── vector_search.py             # pgvector similarity search
+│   │   ├── hybrid_search.py             # Vector + keyword search
+│   │   └── context_builder.py           # Build hierarchical context
+│   ├── rag/
+│   │   ├── __init__.py
+│   │   ├── granite_client.py            # IBM Granite LLM client
+│   │   ├── bob_reasoning.py             # IBM BOB reasoning layer
+│   │   ├── prompt_templates.py          # Prompt engineering
+│   │   └── response_generator.py        # Generate responses with citations
+│   ├── documentation/
+│   │   ├── __init__.py
+│   │   ├── doc_generator.py             # Auto-generate documentation
+│   │   ├── health_scorer.py             # Documentation health scoring
+│   │   └── templates/                   # Documentation templates
+│   ├── database/
+│   │   ├── __init__.py
+│   │   ├── models.py                    # SQLAlchemy models
+│   │   ├── repositories.py              # Repository CRUD
+│   │   ├── documents.py                 # Document CRUD
+│   │   └── chunks.py                    # Chunk CRUD
+│   ├── config.py                        # AI engine configuration
+│   ├── main.py                          # AI engine entry point
+│   └── requirements.txt
+│
+├── shared/                      # Shared utilities
+│   ├── schemas.py                       # Shared data models
+│   └── utils.py                         # Common utilities
+│
+├── docker-compose.yml           # Local development setup
+├── .env.example                 # Environment variables template
+└── README.md                    # Project documentation
+

@@ -16,6 +16,7 @@ from processing.embeddings import EmbeddingGenerator
 # CONFIG
 # -------------------------------
 REPO_URL = "https://github.com/fastapi/fastapi"
+
 ZIP_PATH = "sample_project.zip"
 
 SUPPORTED_EXTENSIONS = (".py", ".js", ".ts", ".md", ".txt", ".json")

@@ -26,8 +26,6 @@ def helper():
 """ * 20
     }
 ]
-
-
 # ---------------- CHUNKING TEST ----------------
 
 chunker = Chunker()
@@ -41,7 +39,6 @@ print(len(chunks))
 print("\nSample chunk:\n")
 
 print(chunks[0])
-
 
 # ---------------- EMBEDDING TEST ----------------
 

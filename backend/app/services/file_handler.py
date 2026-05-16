@@ -52,8 +52,16 @@ class FileHandler:
         Raises:
             HTTPException: If file validation fails
         """
+        # Validate filename exists
+        filename = upload_file.filename
+        if not filename:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="Filename is required"
+            )
+        
         # Validate file extension
-        if not self.validate_file_extension(upload_file.filename):
+        if not self.validate_file_extension(filename):
             raise HTTPException(
                 status_code=status.HTTP_400_BAD_REQUEST,
                 detail=f"File type not allowed. Allowed extensions: {', '.join(self.allowed_extensions)}"
@@ -61,7 +69,7 @@ class FileHandler:
         
         # Create unique filename to avoid collisions
         file_id = str(uuid.uuid4())
-        file_ext = Path(upload_file.filename).suffix
+        file_ext = Path(filename).suffix
         unique_filename = f"{file_id}{file_ext}"
         
         # Create subfolder if specified

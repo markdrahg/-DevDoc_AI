@@ -10,7 +10,7 @@ from contextlib import asynccontextmanager
 
 from app.config import settings
 from app.middleware import setup_cors, setup_error_handlers
-from app.routers import ingestion_router, query_router, health_router
+from app.routers import ingestion_router, query_router, documentation_router, health_router
 
 # Configure logging
 logging.basicConfig(
@@ -62,6 +62,7 @@ app.add_middleware(GZipMiddleware, minimum_size=1000)
 app.include_router(health_router)
 app.include_router(ingestion_router)
 app.include_router(query_router)
+app.include_router(documentation_router)
 
 logger.info("[OK] All routers registered")
 logger.info("[OK] Application initialized successfully")

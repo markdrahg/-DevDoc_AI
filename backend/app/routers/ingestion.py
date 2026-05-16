@@ -36,11 +36,18 @@ async def ingest_github_repository(request: GitHubIngestionRequest):
         # Forward request to AI engine
         response = await ai_client.ingest_github_repo(
             repo_url=str(request.repo_url),
-            branch=request.branch
+            branch=request.branch or "main"
         )
         
+        job_id = response.get("job_id")
+        if not job_id:
+            raise HTTPException(
+                status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+                detail="AI engine did not return a job ID"
+            )
+        
         return IngestionResponse(
-            job_id=response.get("job_id"),
+            job_id=job_id,
             status=IngestionStatus.PROCESSING,
             message="GitHub repository ingestion started",
             ingestion_type=IngestionType.GITHUB
@@ -61,7 +68,7 @@ async def ingest_zip_file(file: UploadFile = File(...)):
     logger.info(f"Ingesting ZIP file: {file.filename}")
     
     # Validate file type
-    if not file.filename.endswith('.zip'):
+    if not file.filename or not file.filename.endswith('.zip'):
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail="Only ZIP files are allowed"
@@ -77,8 +84,15 @@ async def ingest_zip_file(file: UploadFile = File(...)):
         # Clean up uploaded file (optional - can keep for debugging)
         # file_handler.delete_file(file_path)
         
+        job_id = response.get("job_id")
+        if not job_id:
+            raise HTTPException(
+                status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+                detail="AI engine did not return a job ID"
+            )
+        
         return IngestionResponse(
-            job_id=response.get("job_id"),
+            job_id=job_id,
             status=IngestionStatus.PROCESSING,
             message="ZIP file ingestion started",
             ingestion_type=IngestionType.ZIP
@@ -99,7 +113,7 @@ async def ingest_pdf_file(file: UploadFile = File(...)):
     logger.info(f"Ingesting PDF file: {file.filename}")
     
     # Validate file type
-    if not file.filename.endswith('.pdf'):
+    if not file.filename or not file.filename.endswith('.pdf'):
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail="Only PDF files are allowed"
@@ -115,8 +129,15 @@ async def ingest_pdf_file(file: UploadFile = File(...)):
         # Clean up uploaded file (optional)
         # file_handler.delete_file(file_path)
         
+        job_id = response.get("job_id")
+        if not job_id:
+            raise HTTPException(
+                status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+                detail="AI engine did not return a job ID"
+            )
+        
         return IngestionResponse(
-            job_id=response.get("job_id"),
+            job_id=job_id,
             status=IngestionStatus.PROCESSING,
             message="PDF file ingestion started",
             ingestion_type=IngestionType.PDF
@@ -139,9 +160,16 @@ async def get_ingestion_status(job_id: str):
     try:
         response = await ai_client.get_ingestion_status(job_id)
         
+        status_value = response.get("status")
+        if not status_value:
+            raise HTTPException(
+                status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+                detail="AI engine did not return status"
+            )
+        
         return IngestionStatusResponse(
             job_id=job_id,
-            status=response.get("status"),
+            status=status_value,
             progress=response.get("progress", 0),
             message=response.get("message", ""),
             files_processed=response.get("files_processed"),

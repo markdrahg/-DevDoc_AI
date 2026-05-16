@@ -1,9 +1,10 @@
-import { useState } from 'react';
-import { MessageSquare, Send, Bot, User } from 'lucide-react';
+import { useState } from "react";
+import { MessageSquare, Send, Bot, User } from "lucide-react";
+import { api } from "../services/api";
 
 interface Message {
   id: string;
-  role: 'user' | 'assistant';
+  role: "user" | "assistant";
   content: string;
   timestamp: Date;
 }
@@ -11,13 +12,14 @@ interface Message {
 export function QuestionInterface() {
   const [messages, setMessages] = useState<Message[]>([
     {
-      id: '1',
-      role: 'assistant',
-      content: 'Hi! I\'m your AI assistant. Ask me anything about your codebase and I\'ll help you understand it better.',
-      timestamp: new Date()
-    }
+      id: "1",
+      role: "assistant",
+      content:
+        "Hi! I'm your AI assistant. Ask me anything about your codebase and I'll help you understand it better.",
+      timestamp: new Date(),
+    },
   ]);
-  const [input, setInput] = useState('');
+  const [input, setInput] = useState("");
   const [isLoading, setIsLoading] = useState(false);
 
   const handleSend = async (e: React.FormEvent) => {
@@ -26,26 +28,38 @@ export function QuestionInterface() {
 
     const userMessage: Message = {
       id: Date.now().toString(),
-      role: 'user',
+      role: "user",
       content: input,
-      timestamp: new Date()
+      timestamp: new Date(),
     };
 
-    setMessages(prev => [...prev, userMessage]);
-    setInput('');
+    setMessages((prev) => [...prev, userMessage]);
+    setInput("");
     setIsLoading(true);
 
-    // Simulate AI response
-    setTimeout(() => {
+    try {
+      const response = await api.askQuestion(input);
       const aiMessage: Message = {
         id: (Date.now() + 1).toString(),
-        role: 'assistant',
-        content: 'This is a demo response. In production, this would connect to the IBM watsonx API to analyze your codebase and provide intelligent answers.',
-        timestamp: new Date()
+        role: "assistant",
+        content: response.answer,
+        timestamp: new Date(),
       };
-      setMessages(prev => [...prev, aiMessage]);
+      setMessages((prev) => [...prev, aiMessage]);
+    } catch (error) {
+      console.error("❌ Query failed:", error);
+      const errorMessage =
+        error instanceof Error ? error.message : "Unknown error occurred";
+      const aiMessage: Message = {
+        id: (Date.now() + 1).toString(),
+        role: "assistant",
+        content: `Sorry, I encountered an error: ${errorMessage}\n\nThe AI engine might not be running yet. Make sure:\n1. Backend is running on http://localhost:8000\n2. AI engine is running on http://localhost:8001`,
+        timestamp: new Date(),
+      };
+      setMessages((prev) => [...prev, aiMessage]);
+    } finally {
       setIsLoading(false);
-    }, 1500);
+    }
   };
 
   return (
@@ -54,9 +68,13 @@ export function QuestionInterface() {
       <div className="border-b border-border/40 px-6 py-6 backdrop-blur-sm bg-background/80">
         <div className="flex items-center gap-2 animate-fade-in">
           <MessageSquare className="w-5 h-5 text-primary" />
-          <h3 className="text-base font-semibold text-foreground">Ask Questions</h3>
+          <h3 className="text-base font-semibold text-foreground">
+            Ask Questions
+          </h3>
         </div>
-        <p className="text-xs text-muted-foreground mt-1">Powered by IBM watsonx</p>
+        <p className="text-xs text-muted-foreground mt-1">
+          Powered by IBM watsonx
+        </p>
       </div>
 
       {/* Messages */}
@@ -67,20 +85,24 @@ export function QuestionInterface() {
             className="space-y-3 animate-fade-in-up"
             style={{ animationDelay: `${index * 0.1}s` }}
           >
-            {message.role === 'assistant' && (
+            {message.role === "assistant" && (
               <div className="flex items-center gap-3">
                 <div className="w-8 h-8 rounded-full bg-gradient-to-br from-primary to-secondary flex items-center justify-center flex-shrink-0 shadow-lg shadow-primary/20 animate-fade-in">
                   <Bot className="w-4 h-4 text-white" />
                 </div>
-                <span className="text-sm font-semibold text-foreground">AI Assistant</span>
+                <span className="text-sm font-semibold text-foreground">
+                  AI Assistant
+                </span>
               </div>
             )}
-            {message.role === 'user' && (
+            {message.role === "user" && (
               <div className="flex items-center gap-3">
                 <div className="w-8 h-8 rounded-full bg-muted flex items-center justify-center flex-shrink-0 border border-border/40">
                   <User className="w-4 h-4 text-muted-foreground" />
                 </div>
-                <span className="text-sm font-semibold text-foreground">You</span>
+                <span className="text-sm font-semibold text-foreground">
+                  You
+                </span>
               </div>
             )}
             <div className="pl-11">
@@ -96,13 +118,24 @@ export function QuestionInterface() {
               <div className="w-8 h-8 rounded-full bg-gradient-to-br from-primary to-secondary flex items-center justify-center flex-shrink-0 shadow-lg shadow-primary/20">
                 <Bot className="w-4 h-4 text-white animate-pulse" />
               </div>
-              <span className="text-sm font-semibold text-foreground">AI Assistant</span>
+              <span className="text-sm font-semibold text-foreground">
+                AI Assistant
+              </span>
             </div>
             <div className="pl-11">
               <div className="flex gap-1.5 p-3 rounded-lg bg-card/50 border border-border/20 w-fit">
-                <div className="w-2 h-2 rounded-full bg-primary/60 animate-bounce" style={{ animationDelay: '0ms' }} />
-                <div className="w-2 h-2 rounded-full bg-primary/60 animate-bounce" style={{ animationDelay: '150ms' }} />
-                <div className="w-2 h-2 rounded-full bg-primary/60 animate-bounce" style={{ animationDelay: '300ms' }} />
+                <div
+                  className="w-2 h-2 rounded-full bg-primary/60 animate-bounce"
+                  style={{ animationDelay: "0ms" }}
+                />
+                <div
+                  className="w-2 h-2 rounded-full bg-primary/60 animate-bounce"
+                  style={{ animationDelay: "150ms" }}
+                />
+                <div
+                  className="w-2 h-2 rounded-full bg-primary/60 animate-bounce"
+                  style={{ animationDelay: "300ms" }}
+                />
               </div>
             </div>
           </div>

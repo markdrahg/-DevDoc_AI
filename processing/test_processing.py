@@ -1,23 +1,57 @@
 # test_processing.py
+from typing import Any
 
 from processing.chunkers import Chunker
 from processing.embeddings import EmbeddingGenerator
 
-# simulate ingestion output
-files = {
-    "auth.py": "def login(user): return True\n" * 50,
-    "utils.py": "def helper(): pass\n" * 50
-}
+# ---------------- SAMPLE FILES ----------------
 
-# step 1: chunking
+files = [
+    {
+        "file_path": "auth.py",
+        "content": """
+def login(user):
+    return True
+
+class AuthService:
+    pass
+""" * 20
+    },
+
+    {
+        "file_path": "utils.py",
+        "content": """
+def helper():
+    return "hello"
+""" * 20
+    }
+]
+
+
+# ---------------- CHUNKING TEST ----------------
+
 chunker = Chunker()
+
 chunks = chunker.chunk_files(files)
 
-print("Total chunks:", len(chunks))
-print("Sample chunk:", chunks[0])
+print("\nTotal chunks created:")
+print(len(chunks))
 
-# step 2: embeddings
+
+print("\nSample chunk:\n")
+
+print(chunks[0])
+
+
+# ---------------- EMBEDDING TEST ----------------
+
 embedder = EmbeddingGenerator()
+
 chunks_with_embeddings = embedder.generate_embeddings(chunks)
 
-print("Embedding length:", len(chunks_with_embeddings[0]["embedding"]))
+print("\nEmbedding vector length:")
+
+print(len(chunks_with_embeddings[0]["embedding"]))
+
+
+print("\nEmbedding generated successfully.")

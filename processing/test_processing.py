@@ -1,6 +1,6 @@
 # test_processing.py
 
-from processing.chunker import Chunker
+from processing.chunkers import Chunker
 from processing.embeddings import EmbeddingGenerator
 
 # simulate ingestion output

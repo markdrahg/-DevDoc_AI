@@ -12,7 +12,7 @@ class HybridSearch:
 
         return sum(word in text for word in query_words)
 
-    def search(self, query: str, top_k: int = 5) -> List[Dict]:
+    def search(self, query: str, top_k: int = 8) -> List[Dict]:
 
         #  1. Get more candidates
         chunks = self.vector_search.search(query, top_k=top_k * 2)

@@ -1,25 +1,26 @@
 from sqlalchemy import Column, Integer, String, Text, ForeignKey
-from sqlalchemy.orm import relationship, declarative_base
-
-Base = declarative_base()
+from sqlalchemy.orm import relationship
+from ai_engine.database.db import Base
 
 
 class Document(Base):
     __tablename__ = "documents"
 
-    id = Column(Integer, primary_key=True, index=True)
-    file_path = Column(String, unique=True, index=True)
+    id = Column(Integer, primary_key=True)
+    repo_id = Column(String)  # 🔥 NEW
+    file_path = Column(String)
     content = Column(Text)
 
-    chunks = relationship("Chunk", back_populates="document", cascade="all, delete")
+    chunks = relationship("Chunk", back_populates="document")
 
 
 class Chunk(Base):
     __tablename__ = "chunks"
 
-    id = Column(Integer, primary_key=True, index=True)
+    id = Column(Integer, primary_key=True)
+    repo_id = Column(String)  # 🔥 NEW
     document_id = Column(Integer, ForeignKey("documents.id"))
     content = Column(Text)
-    embedding = Column(Text)  # store as string for now
+    embedding = Column(Text)
 
     document = relationship("Document", back_populates="chunks")

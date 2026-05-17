@@ -2,18 +2,17 @@ from .models import Document
 from .repositories import BaseRepository
 
 
-class DocumentRepository(BaseRepository):
+class DocumentRepository:
+    def __init__(self, db):
+        self.db = db
 
-    def create(self, file_path, content):
-        existing = self.get_by_path(file_path)
-        if existing:
-            return existing
-
-        doc = Document(file_path=file_path, content=content)
-        return self.add(doc)
-
-    def get_by_path(self, file_path):
-        return self.db.query(Document).filter_by(file_path=file_path).first()
-
-    def get_all_docs(self):
-        return self.db.query(Document).all()
+    def create(self, repo_id, file_path, content):
+        doc = Document(
+            repo_id=repo_id,
+            file_path=file_path,
+            content=content
+        )
+        self.db.add(doc)
+        self.db.commit()
+        self.db.refresh(doc)
+        return doc

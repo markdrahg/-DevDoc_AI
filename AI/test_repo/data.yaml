@@ -1,0 +1,8 @@
+project:
+  name: DevDoc AI
+  type: AI Tool
+
+features:
+  - ingestion
+  - rag
+  - documentation

@@ -1,0 +1,13 @@
+# Ignore everything
+*
+
+# But keep git metadata and this .gitignore
+!.gitignore
+!.git/
+
+# Allow the app folders and all their contents
+!devdoc-frontend/
+!devdoc-frontend/**
+
+!devdoc-backend/
+!devdoc-backend/**

@@ -36,8 +36,6 @@ class FileParser:
             return None
 
     def _parse_pdf(self, file_path):
-        import fitz
-    
         doc = fitz.open(file_path)
         text = ""
     

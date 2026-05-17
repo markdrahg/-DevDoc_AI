@@ -25,20 +25,26 @@ class ZipHandler:
         if os.path.exists(self.extract_to):
             shutil.rmtree(self.extract_to)
 
-    # ✅ MAIN METHOD (used by ingestion_manager)
+    # MAIN METHOD (used by ingestion_manager)
     def extract(self):
         self._clean_workspace()
 
         os.makedirs(self.extract_to, exist_ok=True)
 
         with zipfile.ZipFile(self.zip_path, "r") as zip_ref:
+            # Validate paths to prevent path traversal attacks
+            for member in zip_ref.namelist():
+                member_path = os.path.join(self.extract_to, member)
+                if not os.path.abspath(member_path).startswith(os.path.abspath(self.extract_to)):
+                    raise ValueError(f"Attempted path traversal in zip file: {member}")
+            
             zip_ref.extractall(self.extract_to)
 
-        print("📦 ZIP extracted successfully")
+        print("ZIP extracted successfully")
 
         return self.extract_to
 
-    # ✅ OPTIONAL (if you want filtered files later)
+    # OPTIONAL (if you want filtered files later)
     def get_supported_files(self):
         collected_files = []
 

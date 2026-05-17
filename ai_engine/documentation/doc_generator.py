@@ -1,7 +1,7 @@
 import os
 from typing import List, Dict
 
-# ✅ shared usage
+# shared usage
 from shared.utils import get_file_name, log
 
 
@@ -59,7 +59,7 @@ class DocumentationGenerator:
         code = chunk["content"][:3000]
         path = chunk["file_path"]
 
-        log(f"📄 Generating doc for: {get_file_name(path)}")  # ✅ shared log
+        log(f"Generating doc for: {get_file_name(path)}")
 
         res = self.llm.generate(build_doc_prompt(path, code))
 
@@ -96,7 +96,7 @@ class DocumentationGenerator:
                 sections[key] += line + "\n"
 
         return self.template.format(
-            file_name=get_file_name(path),  # ✅ shared used
+            file_name=get_file_name(path),
             file_path=path,
             brief_description=sections["brief_description"] or "N/A",
             responsibilities_list=sections["responsibilities_list"] or "N/A",
@@ -114,7 +114,7 @@ class DocumentationGenerator:
         docs = []
         seen = {}
 
-        log("📚 Grouping chunks by file...")  # ✅ shared log
+        log("Grouping chunks by file...")
 
         # group chunks by file
         for c in chunks:
@@ -123,7 +123,7 @@ class DocumentationGenerator:
                 seen[path] = ""
             seen[path] += c["content"]
 
-        log(f"🧠 Generating docs for {len(seen)} files...")  # ✅ shared log
+        log(f"Generating docs for {len(seen)} files...")
 
         for path, full_code in seen.items():
             chunk = {
@@ -132,6 +132,6 @@ class DocumentationGenerator:
             }
             docs.append(self.generate_for_chunk(chunk))
 
-        log("✅ Documentation generation complete")  # ✅ shared log
+        log("Documentation generation complete")
 
         return "\n\n".join(docs)

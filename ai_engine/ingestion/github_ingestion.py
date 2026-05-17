@@ -21,11 +21,16 @@ class GitHubIngestion:
 
         print(f"Cloning repository: {self.repo_url}")
 
-        git.Repo.clone_from(
-            self.repo_url,
-            self.clone_dir
-        )
+        try:
+            git.Repo.clone_from(
+                self.repo_url,
+                self.clone_dir
+            )
 
-        print("Repository cloned successfully")
+            print("Repository cloned successfully")
 
-        return self.clone_dir
+            return self.clone_dir
+            
+        except Exception as e:
+            print(f"Git clone failed: {e}")
+            raise ValueError(f"Failed to clone repository: {self.repo_url}. Check URL and network connection.")

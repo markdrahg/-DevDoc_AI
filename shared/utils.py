@@ -15,4 +15,10 @@ def is_code_file(path: str) -> bool:
     ))
     
 def log(msg: str):
-    print(f"[DevDoc AI] -> {msg}")
+    # Handle Unicode encoding issues on Windows
+    try:
+        print(f"[DevDoc AI] -> {msg}")
+    except UnicodeEncodeError:
+        # Fallback: encode to ASCII, replacing problematic characters
+        safe_msg = msg.encode('ascii', 'replace').decode('ascii')
+        print(f"[DevDoc AI] -> {safe_msg}")

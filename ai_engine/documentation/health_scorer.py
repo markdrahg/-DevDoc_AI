@@ -2,6 +2,15 @@ class DocumentationHealthScorer:
 
     def score(self, chunks):
         total = len(chunks)
+        
+        # Handle empty chunks
+        if total == 0:
+            return {
+                "score": 0.0,
+                "coverage": 0.0,
+                "comments": 0.0
+            }
+        
         funcs = 0
         comments = 0
 

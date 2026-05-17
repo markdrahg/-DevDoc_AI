@@ -20,12 +20,12 @@ def resolve_path(path: str) -> str:
 
     base_dir = os.path.dirname(os.path.dirname(os.path.dirname(__file__)))
 
-    # ✅ project root
+    # project root
     project_path = os.path.join(base_dir, path)
     if os.path.exists(project_path):
         return project_path
 
-    # 🔥 ADD THIS (ai_engine folder)
+    # ai_engine folder
     ai_engine_path = os.path.join(base_dir, "ai_engine", path)
     if os.path.exists(ai_engine_path):
         return ai_engine_path
@@ -47,28 +47,28 @@ class IngestionManager:
         source = resolve_path(source)
 
         if source.startswith("http"):
-            log("🌐 GitHub repo detected...")
+            log("GitHub repo detected...")
             return self._handle_repo(source)
 
         elif source.lower().endswith(".zip"):
             if not os.path.exists(source):
-                log(f"❌ ZIP not found: {source}")
+                log(f"ZIP not found: {source}")
                 return []
-            log("📦 ZIP detected...")
+            log("ZIP detected...")
             return self._handle_zip(source)
 
         elif source.lower().endswith(".pdf"):
             if not os.path.exists(source):
-                log(f"❌ PDF not found: {source}")
+                log(f"PDF not found: {source}")
                 return []
-            log("📄 PDF detected...")
+            log("PDF detected...")
             return self._handle_pdf(source)
 
         else:
             if not os.path.exists(source):
-                log(f"❌ Folder not found: {source}")
+                log(f"Folder not found: {source}")
                 return []
-            log("📁 Local folder detected...")
+            log("Local folder detected...")
             return self._handle_local(source)
 
     # ---------------------
@@ -101,7 +101,7 @@ class IngestionManager:
         files = []
 
         folder_path = clean_path(folder_path)
-        log(f"🔍 Scanning: {folder_path}")
+        log(f"Scanning: {folder_path}")
 
         IMPORTANT_EXTENSIONS = (
             ".py", ".js", ".ts", ".java",
@@ -141,5 +141,5 @@ class IngestionManager:
                 if result:
                     files.append(result)
 
-        log(f"✅ Loaded {len(files)} valid files")
+        log(f"Loaded {len(files)} valid files")
         return files

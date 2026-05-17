@@ -29,6 +29,6 @@ def save_docs(chunks: List[Dict], doc_generator) -> None:
             saved_files += 1
 
         except Exception as e:
-            print(f"⚠️ Skipped {file_path}: {e}")
+            print(f"Skipped {file_path}: {e}")
 
-    print(f"\n✅ Saved {saved_files} files in /docs/")
+    print(f"\nSaved {saved_files} files in /docs/")

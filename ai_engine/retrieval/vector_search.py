@@ -7,7 +7,7 @@ class VectorSearch:
     def __init__(self, embedding_model):
         self.embedding_model = embedding_model
         self.chunks: List[Dict] = []
-        self.embeddings: np.ndarray = np.array([])  # ✅ FIXED
+        self.embeddings: np.ndarray = np.array([])
 
     def load_chunks(self, chunks: List[Dict]):
         self.chunks = chunks
@@ -15,7 +15,7 @@ class VectorSearch:
 
     def search(self, query: str, top_k: int = 5) -> List[Dict]:
 
-        # ✅ safety check
+        # safety check
         if not self.chunks or self.embeddings.size == 0:
             return []
 

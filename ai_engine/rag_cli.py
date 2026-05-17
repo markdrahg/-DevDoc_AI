@@ -28,89 +28,93 @@ from ai_engine.save_docs import save_docs
 from sentence_transformers import SentenceTransformer
 
 
-# 🔥 GLOBAL MODEL (LOAD ONCE)
+# GLOBAL MODEL (LOAD ONCE)
 MODEL = SentenceTransformer("all-MiniLM-L6-v2")
 
 
 # ---------------- LOAD DATA ----------------
 def load_data(source, repo_id):
-    log("⚙️ Processing data...")
+    log("Processing data...")
 
     manager = IngestionManager()
     files = manager.ingest(source)
 
     if not files:
-        log("❌ No files found")
+        log("No files found")
         return []
 
     init_db()
     db = SessionLocal()
 
-    doc_repo = DocumentRepository(db)
-    chunk_repo = ChunkRepository(db)
+    try:
+        doc_repo = DocumentRepository(db)
+        chunk_repo = ChunkRepository(db)
 
-    chunker = Chunker()
-    chunks = chunker.chunk_files(files)
+        chunker = Chunker()
+        chunks = chunker.chunk_files(files)
 
-    # 🔥 safety limit (performance)
-    chunks = chunks[:500]
+        # Safety limit (performance)
+        chunks = chunks[:500]
 
-    embedder = EmbeddingGenerator()
-    chunks = embedder.generate_embeddings(chunks)
+        embedder = EmbeddingGenerator()
+        chunks = embedder.generate_embeddings(chunks)
 
-    log("💾 Storing in DB...")
+        log("Storing in DB...")
 
-    for chunk in chunks:
-        doc = doc_repo.create(repo_id, chunk["file_path"], chunk["content"])
+        for chunk in chunks:
+            doc = doc_repo.create(repo_id, chunk["file_path"], chunk["content"])
 
-        chunk_repo.create(
-            repo_id,
-            doc.id,
-            chunk["content"],
-            chunk.get("embedding")
-        )
+            chunk_repo.create(
+                repo_id,
+                doc.id,
+                chunk["content"],
+                chunk.get("embedding")
+            )
 
-    db.close()
-    log("✅ Stored in DB")
+        log("Stored in DB")
 
-    return chunks
+        return chunks
+    finally:
+        db.close()
 
 
 # ---------------- LOAD FROM DB ----------------
 def load_from_db(repo_id):
-    log("📦 Loading from DB...")
+    log("Loading from DB...")
 
     init_db()
     db = SessionLocal()
 
-    chunk_repo = ChunkRepository(db)
-    db_chunks = chunk_repo.get_by_repo(repo_id)
+    try:
+        chunk_repo = ChunkRepository(db)
+        db_chunks = chunk_repo.get_by_repo(repo_id)
 
-    chunks = []
+        chunks = []
 
-    for c in db_chunks:
-        chunks.append({
-            "file_path": c.document.file_path,
-            "content": c.content,
-            "embedding": json.loads(c.embedding) if c.embedding else None
-        })
+        for c in db_chunks:
+            chunks.append({
+                "file_path": c.document.file_path,
+                "content": c.content,
+                "embedding": json.loads(c.embedding) if c.embedding else None
+            })
 
-    db.close()
-    log(f"✅ Loaded {len(chunks)} chunks")
+        log(f"Loaded {len(chunks)} chunks")
 
-    return chunks
+        return chunks
+    finally:
+        db.close()
 
 
 # ---------------- SERVICE FUNCTIONS ----------------
 
 def run_pipeline(source):
     repo_id = str(uuid.uuid4())
-    log(f"🆔 Repo ID: {repo_id}")
+    log(f"Repo ID: {repo_id}")
 
     chunks = load_data(source, repo_id)
 
     if not chunks:
-        log("❌ No data processed — stopping pipeline")
+        log("No data processed - stopping pipeline")
         return [], repo_id
 
     return load_from_db(repo_id), repo_id
@@ -127,7 +131,7 @@ def ask_question(query, chunks):
 
         result = rag.run(query)
 
-        # 🔥 fallback fix
+        # Fallback fix
         if "not enough information" in result["answer"].lower():
             result["answer"] = (
                 "This project appears to be a simple Python-based system "
@@ -137,7 +141,7 @@ def ask_question(query, chunks):
         return result
 
     except Exception as e:
-        log(f"⚠️ RAG failed: {e}")
+        log(f"RAG failed: {e}")
         return {
             "answer": "Fallback: Unable to process query.",
             "sources": []
@@ -157,55 +161,55 @@ def get_health(chunks):
 # ---------------- TEST FUNCTION ----------------
 
 def test_pipeline():
-    print("\n🧪 Running system test...\n")
+    print("\nRunning system test...\n")
 
     test_source = "ai_engine"
 
     chunks, repo_id = run_pipeline(test_source)
 
     if not chunks:
-        print("❌ TEST FAILED: No chunks loaded")
+        print("TEST FAILED: No chunks loaded")
         return
 
-    print(f"✅ Repo ID: {repo_id}")
-    print(f"✅ Chunks: {len(chunks)}")
+    print(f"Repo ID: {repo_id}")
+    print(f"Chunks: {len(chunks)}")
 
     result = ask_question("What does this project do?", chunks)
 
     if not result or "answer" not in result:
-        print("❌ TEST FAILED: RAG broken")
+        print("TEST FAILED: RAG broken")
         return
 
-    print("✅ RAG working")
+    print("RAG working")
 
     docs = generate_docs(chunks)
     if not docs:
-        print("❌ TEST FAILED: Docs broken")
+        print("TEST FAILED: Docs broken")
         return
 
-    print("✅ Docs working")
+    print("Docs working")
 
     health = get_health(chunks)
     if not health:
-        print("❌ TEST FAILED: Health broken")
+        print("TEST FAILED: Health broken")
         return
 
-    print("✅ Health working")
+    print("Health working")
 
-    print("\n🎉 ALL SYSTEMS OK\n")
+    print("\nALL SYSTEMS OK\n")
 
 
 # ---------------- CLI ----------------
 
 def main():
-    log("🚀 DevDoc AI READY\n")
+    log("DevDoc AI READY\n")
 
     source = input("Enter repo / zip / pdf / folder: ").strip()
 
     chunks, repo_id = run_pipeline(source)
 
     if not chunks:
-        log("❌ Nothing to process")
+        log("Nothing to process")
         return
 
     while True:
@@ -222,7 +226,7 @@ def main():
             query = input("Question: ")
             result = ask_question(query, chunks)
 
-            print("\n💡", result["answer"])
+            print("\n", result["answer"])
             print("\nSources:")
             for s in result.get("sources", []):
                 print("-", s)

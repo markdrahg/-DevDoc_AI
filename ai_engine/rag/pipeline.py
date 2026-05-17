@@ -13,10 +13,10 @@ class RAGPipeline:
 
     def run(self, query: str):
 
-        # 1️⃣ refine query
+        # 1. refine query
         refined_query = self.reasoning.refine_query(query)
 
-        # 2️⃣ retrieve relevant chunks
+        # 2. retrieve relevant chunks
         chunks = self.retriever.search(refined_query)
 
         if not chunks:
@@ -25,18 +25,20 @@ class RAGPipeline:
                 "sources": []
             }
 
-        # 3️⃣ build context
+        # 3. build context
         context = self.context_builder.build(chunks)
 
-        # 4️⃣ build prompt
+        # 4. build prompt
         prompt = PromptTemplates.build(context, refined_query)
 
-        # 5️⃣ generate response
+        # 5. generate response
         answer = self.llm.generate(prompt)
 
-        # 6️⃣ post-process
+        # ensure string
+        if not isinstance(answer, str):
+            answer = str(answer)
+        
         answer = self.reasoning.post_process(answer)
-
         return {
             "answer": answer,
             "sources": [c["file_path"] for c in chunks]

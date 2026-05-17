@@ -7,7 +7,7 @@ class Document(Base):
     __tablename__ = "documents"
 
     id = Column(Integer, primary_key=True)
-    repo_id = Column(String)  # 🔥 NEW
+    repo_id = Column(String)
     file_path = Column(String)
     content = Column(Text)
 
@@ -18,7 +18,7 @@ class Chunk(Base):
     __tablename__ = "chunks"
 
     id = Column(Integer, primary_key=True)
-    repo_id = Column(String)  # 🔥 NEW
+    repo_id = Column(String)
     document_id = Column(Integer, ForeignKey("documents.id"))
     content = Column(Text)
     embedding = Column(Text)
